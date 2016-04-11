@@ -1467,5 +1467,4 @@ RCP<const MultivariatePolynomial> mul_mult_poly(const UnivariatePolynomial &a,
 }
 
 
-//testing
 } // SymEngine
