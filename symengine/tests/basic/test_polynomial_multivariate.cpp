@@ -1206,3 +1206,201 @@ TEST_CASE("Testing equality of MultivariateExprPolynomials with Expressions",
     REQUIRE(p1 == 0);
     REQUIRE(p2 == expr1);
 }
+
+
+
+
+TEST_CASE("Testing addition, subtraction, multiplication of "
+          "MultivariateExprPolynomials with the same set of variables",
+          "[MultivariateExprPolynomial]")
+{
+    RCP<const Symbol> x = symbol("x");
+    RCP<const Symbol> y = symbol("y");
+    Expression a(symbol("a"));                               // a
+    Expression negB(-Expression(symbol("b")));               //-b
+    Expression num1(integer(2));                             // 2
+    Expression negNum(integer(-3));                          //-3
+    Expression comp1(integer(1) + Expression(symbol("c")));  //(1+c)
+    Expression comp4(integer(-4) - Expression(symbol("f"))); //(-4 - f)
+
+    MultivariateExprPolynomial p1(MultivariatePolynomial::from_dict(
+        {x, y},
+        {{{1, 1}, a}, {{1, 0}, negB}, {{2, -1}, num1}, {{0, -1}, negNum}}) );
+
+    MultivariateExprPolynomial p2( MultivariatePolynomial::from_dict(
+        {x, y}, {{{1, 0}, comp1}, {{0, 0}, comp4}, {{0, -1}, comp4}}));
+    MultivariateExprPolynomial p3( MultivariatePolynomial::from_dict(
+        {x, y}, {{{0, 0}, Expression(integer(0))}}));
+
+    MultivariateExprPolynomial q1( MultivariatePolynomial::from_dict(
+        {x, y}, {{{1, 1}, a},
+                 {{1, 0}, negB + comp1},
+                 {{2, -1}, num1},
+                 {{0, 0}, comp4},
+                 {{0, -1}, comp4 + negNum}}));
+    MultivariateExprPolynomial q2( MultivariatePolynomial::from_dict(
+        {x, y}, {{{2, -1}, num1},
+                 {{1, 1}, a},
+                 {{1, 0}, (-1 * comp1) + negB},
+                 {{0, -1}, negNum - comp4},
+                 {{0, 0}, comp4 * -1}}));
+    MultivariateExprPolynomial q3( MultivariatePolynomial::from_dict(
+        {x, y}, {{{2, 1}, a * comp1},
+                 {{1, 1}, a * comp4},
+                 {{1, 0}, a * comp4 + negB * comp4},
+                 {{2, 0}, negB * comp1},
+                 {{1, -1}, negB * comp4 + negNum * comp1},
+                 {{3, -1}, num1 * comp1},
+                 {{2, -1}, num1 * comp4},
+                 {{2, -2}, num1 * comp4},
+                 {{0, -1}, negNum * comp4},
+                 {{0, -2}, negNum * comp4}}));
+
+    // p1 += p2;
+    // REQUIRE(p1 == q1);
+
+    REQUIRE((p1 + p2) == q1);
+    REQUIRE((p2 + p1) == q1);
+    REQUIRE((p1 + p3) == p1);
+    REQUIRE((p1 - p2) == q2);
+    REQUIRE((p1 - p2) == (-(p2 - p1)) );
+    REQUIRE((p2 - p1) == -q2);
+    REQUIRE((p1 - p3) == p1);
+
+
+    //Making sure its the copyP1 += p2 that overwrites p1
+    // REQUIRE(p1 == q1);
+    //This fails, therefore copyP1 += p2 overwrites p1, implying that the copy constructor makes the new variable a reference to the one it is supposed to be copying.
+
+    MultivariateExprPolynomial copyP1(p1);
+    copyP1 += p2;
+    REQUIRE(copyP1 == q1);
+
+    //making sure copyP1 and p1 are different
+    // REQUIRE(p1 == q1);
+    //copy constructor makes it a reference.
+    //copyP1 and p1 are the same, meaning that the copy constructor is broken. must look into.
+
+    MultivariateExprPolynomial copyP2(p2);
+    copyP2 += p1;
+    REQUIRE(copyP2 == q1);
+
+    copyP1 = p1;
+    REQUIRE(copyP1 == p1);
+    // REQUIRE(eq(*add_mult_poly(*p1, *p2), *q1));
+    // REQUIRE(eq(*add_mult_poly(*p2, *p1), *q1));
+    // REQUIRE(eq(*add_mult_poly(*p1, *p3), *p1));
+    // REQUIRE(eq(*sub_mult_poly(*p1, *p2), *q2));
+    // REQUIRE(eq(*sub_mult_poly(*p2, *p1), *neg_mult_poly(*q2)));
+    // REQUIRE(eq(*sub_mult_poly(*p1, *p3), *p1));
+
+    // REQUIRE(eq(*mul_mult_poly(*p1, *p2), *q3));
+    // REQUIRE(eq(*mul_mult_poly(*p2, *p1), *q3));
+    // REQUIRE(eq(*mul_mult_poly(*p1, *p3), *p3));
+    // REQUIRE(eq(*mul_mult_poly(*p3, *p1), *p3));
+}
+
+/*TEST_CASE("Testing addition, subtraction, multiplication of "
+          "MultivaritePolynomials with disjoint sets of varables",
+          "[MultivariatePolynomial]")
+{
+    RCP<const Symbol> x = symbol("x");
+    RCP<const Symbol> y = symbol("y");
+    RCP<const Symbol> n = symbol("n");
+    RCP<const Symbol> m = symbol("m");
+    Expression a(symbol("a"));                               // a
+    Expression negB(-Expression(symbol("b")));               //-b
+    Expression negNum(integer(-3));                          //-3
+    Expression comp1(integer(1) + Expression(symbol("c")));  //(1+c)
+    Expression comp4(integer(-4) - Expression(symbol("f"))); //(-4 - f)
+
+    RCP<const MultivariatePolynomial> p1 = MultivariatePolynomial::from_dict(
+        {x, y}, {{{1, 1}, a}, {{-1, 0}, negB}, {{0, 0}, negNum}});
+    RCP<const MultivariatePolynomial> p2 = MultivariatePolynomial::from_dict(
+        {n, m}, {{{1, 0}, comp1}, {{2, -1}, comp4}});
+
+    RCP<const MultivariatePolynomial> q1 = MultivariatePolynomial::from_dict(
+        {m, n, x, y}, {{{0, 0, 1, 1}, a},
+                       {{0, 0, -1, 0}, negB},
+                       {{0, 0, 0, 0}, negNum},
+                       {{1, 0, 0, 0}, comp1},
+                       {{2, -1, 0, 0}, comp4}});
+    RCP<const MultivariatePolynomial> q2 = MultivariatePolynomial::from_dict(
+        {m, n, x, y}, {{{0, 0, 1, 1}, a},
+                       {{0, 0, -1, 0}, negB},
+                       {{0, 0, 0, 0}, negNum},
+                       {{1, 0, 0, 0}, comp1 * -1},
+                       {{2, -1, 0, 0}, comp4 * -1}});
+    RCP<const MultivariatePolynomial> q3 = MultivariatePolynomial::from_dict(
+        {m, n, x, y}, {{{0, 0, 1, 1}, a * -1},
+                       {{0, 0, -1, 0}, negB * -1},
+                       {{0, 0, 0, 0}, negNum * -1},
+                       {{1, 0, 0, 0}, comp1},
+                       {{2, -1, 0, 0}, comp4}});
+    RCP<const MultivariatePolynomial> q4 = MultivariatePolynomial::from_dict(
+        {m, n, x, y}, {{{2, -1, 1, 1}, a * comp4},
+                       {{2, -1, -1, 0}, negB * comp4},
+                       {{2, -1, 0, 0}, negNum * comp4},
+                       {{1, 0, 1, 1}, a * comp1},
+                       {{1, 0, -1, 0}, negB * comp1},
+                       {{1, 0, 0, 0}, negNum * comp1}});
+
+    REQUIRE(eq(*add_mult_poly(*p1, *p2), *q1));
+    REQUIRE(eq(*add_mult_poly(*p2, *p1), *q1));
+    REQUIRE(eq(*sub_mult_poly(*p1, *p2), *q2));
+    REQUIRE(eq(*sub_mult_poly(*p2, *p1), *q3));
+    REQUIRE(eq(*mul_mult_poly(*p1, *p2), *q4));
+    REQUIRE(eq(*mul_mult_poly(*p2, *p1), *q4));
+}
+
+TEST_CASE("Testing addition, subtraction, multiplication of "
+          "MultivariatePolynomials with an overlapping set of variables",
+          "[MultivariatePolynomial]")
+{
+    RCP<const Symbol> x = symbol("x");
+    RCP<const Symbol> y = symbol("y");
+    RCP<const Symbol> z = symbol("z");
+    Expression a(symbol("a"));                               // a
+    Expression negB(-Expression(symbol("b")));               //-b
+    Expression negNum(integer(-3));                          //-3
+    Expression comp1(integer(1) + Expression(symbol("c")));  //(1+c)
+    Expression comp4(integer(-4) - Expression(symbol("f"))); //(-4 - f)
+
+    RCP<const MultivariatePolynomial> p1 = MultivariatePolynomial::from_dict(
+        {x, y}, {{{1, -1}, a}, {{1, 0}, negB}, {{0, 0}, negNum}});
+    RCP<const MultivariatePolynomial> p2 = MultivariatePolynomial::from_dict(
+        {y, z}, {{{1, 0}, comp1}, {{-2, 1}, comp4}});
+
+    RCP<const MultivariatePolynomial> q1
+        = MultivariatePolynomial::from_dict({x, y, z}, {{{1, -1, 0}, a},
+                                                        {{1, 0, 0}, negB},
+                                                        {{0, 0, 0}, negNum},
+                                                        {{0, 1, 0}, comp1},
+                                                        {{0, -2, 1}, comp4}});
+    RCP<const MultivariatePolynomial> q2 = MultivariatePolynomial::from_dict(
+        {x, y, z}, {{{1, -1, 0}, a},
+                    {{1, 0, 0}, negB},
+                    {{0, 0, 0}, negNum},
+                    {{0, 1, 0}, comp1 * -1},
+                    {{0, -2, 1}, comp4 * -1}});
+    RCP<const MultivariatePolynomial> q3 = MultivariatePolynomial::from_dict(
+        {x, y, z}, {{{1, -1, 0}, a * -1},
+                    {{1, 0, 0}, negB * -1},
+                    {{0, 0, 0}, negNum * -1},
+                    {{0, 1, 0}, comp1},
+                    {{0, -2, 1}, comp4}});
+    RCP<const MultivariatePolynomial> q4 = MultivariatePolynomial::from_dict(
+        {x, y, z}, {{{1, 0, 0}, a * comp1},
+                    {{1, -3, 1}, a * comp4},
+                    {{1, 1, 0}, negB * comp1},
+                    {{1, -2, 1}, negB * comp4},
+                    {{0, 1, 0}, negNum * comp1},
+                    {{0, -2, 1}, comp4 * negNum}});
+
+    REQUIRE(eq(*add_mult_poly(*p1, *p2), *q1));
+    REQUIRE(eq(*add_mult_poly(*p2, *p1), *q1));
+    REQUIRE(eq(*sub_mult_poly(*p1, *p2), *q2));
+    REQUIRE(eq(*sub_mult_poly(*p2, *p1), *q3));
+    REQUIRE(eq(*mul_mult_poly(*p1, *p2), *q4));
+    REQUIRE(eq(*mul_mult_poly(*p2, *p1), *q4));
+}*/

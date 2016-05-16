@@ -729,7 +729,7 @@ MultivariatePolynomial::MultivariatePolynomial(const set_sym &vars,
     SYMENGINE_ASSERT(is_canonical(vars_, degrees_, dict_))
 }
 
-RCP<const MultivariatePolynomial>
+RCP<MultivariatePolynomial>
 MultivariatePolynomial::from_dict(const set_sym &s, umap_vec_expr &&d)
 {
     umap_sym_int degs;
@@ -756,7 +756,7 @@ MultivariatePolynomial::from_dict(const set_sym &s, umap_vec_expr &&d)
         }
         whichvar++;
     }
-    return make_rcp<const MultivariatePolynomial>(s, degs, d);
+    return make_rcp<MultivariatePolynomial>(s, degs, d);
 }
 
 vec_basic MultivariatePolynomial::get_args() const
@@ -903,7 +903,7 @@ Expression MultivariatePolynomial::eval(
     return ans;
 }
 
-RCP<const MultivariatePolynomial> add_mult_poly(const MultivariatePolynomial &a,
+RCP< MultivariatePolynomial> add_mult_poly(const MultivariatePolynomial &a,
                                                 const MultivariatePolynomial &b)
 {
     vec_uint v1;
@@ -928,7 +928,7 @@ RCP<const MultivariatePolynomial> add_mult_poly(const MultivariatePolynomial &a,
     return MultivariatePolynomial::from_dict(s, std::move(dict));
 }
 
-RCP<const MultivariatePolynomial> neg_mult_poly(const MultivariatePolynomial &a)
+RCP< MultivariatePolynomial> neg_mult_poly(const MultivariatePolynomial &a)
 {
     umap_vec_expr dict;
     set_sym s = a.vars_;
@@ -939,13 +939,13 @@ RCP<const MultivariatePolynomial> neg_mult_poly(const MultivariatePolynomial &a)
     return MultivariatePolynomial::from_dict(s, std::move(dict));
 }
 
-RCP<const MultivariatePolynomial> sub_mult_poly(const MultivariatePolynomial &a,
+RCP< MultivariatePolynomial> sub_mult_poly(const MultivariatePolynomial &a,
                                                 const MultivariatePolynomial &b)
 {
     return (add_mult_poly(a, *neg_mult_poly(b)));
 }
 
-RCP<const MultivariatePolynomial> mul_mult_poly(const MultivariatePolynomial &a,
+RCP< MultivariatePolynomial> mul_mult_poly(const MultivariatePolynomial &a,
                                                 const MultivariatePolynomial &b)
 {
     vec_uint v1;
@@ -968,7 +968,7 @@ RCP<const MultivariatePolynomial> mul_mult_poly(const MultivariatePolynomial &a,
     return MultivariatePolynomial::from_dict(s, std::move(dict));
 }
 
-RCP<const MultivariatePolynomial> add_mult_poly(const MultivariatePolynomial &a,
+RCP< MultivariatePolynomial> add_mult_poly(const MultivariatePolynomial &a,
                                                 const UnivariatePolynomial &b)
 {
     vec_uint v1;
@@ -992,25 +992,25 @@ RCP<const MultivariatePolynomial> add_mult_poly(const MultivariatePolynomial &a,
     return MultivariatePolynomial::from_dict(s, std::move(dict));
 }
 
-RCP<const MultivariatePolynomial> add_mult_poly(const UnivariatePolynomial &a,
+RCP< MultivariatePolynomial> add_mult_poly(const UnivariatePolynomial &a,
                                                 const MultivariatePolynomial &b)
 {
     return add_mult_poly(b, a);
 }
 
-RCP<const MultivariatePolynomial> sub_mult_poly(const MultivariatePolynomial &a,
+RCP< MultivariatePolynomial> sub_mult_poly(const MultivariatePolynomial &a,
                                                 const UnivariatePolynomial &b)
 {
     return add_mult_poly(a, *neg_uni_poly(b));
 }
 
-RCP<const MultivariatePolynomial> sub_mult_poly(const UnivariatePolynomial &a,
+RCP< MultivariatePolynomial> sub_mult_poly(const UnivariatePolynomial &a,
                                                 const MultivariatePolynomial &b)
 {
     return add_mult_poly(*neg_mult_poly(b), a);
 }
 
-RCP<const MultivariatePolynomial> mul_mult_poly(const MultivariatePolynomial &a,
+RCP< MultivariatePolynomial> mul_mult_poly(const MultivariatePolynomial &a,
                                                 const UnivariatePolynomial &b)
 {
     vec_uint v1;
@@ -1033,13 +1033,13 @@ RCP<const MultivariatePolynomial> mul_mult_poly(const MultivariatePolynomial &a,
     return MultivariatePolynomial::from_dict(s, std::move(dict));
 }
 
-RCP<const MultivariatePolynomial> mul_mult_poly(const UnivariatePolynomial &a,
+RCP< MultivariatePolynomial> mul_mult_poly(const UnivariatePolynomial &a,
                                                 const MultivariatePolynomial &b)
 {
     return mul_mult_poly(b, a);
 }
 
-RCP<const MultivariatePolynomial> add_mult_poly(const UnivariatePolynomial &a,
+RCP< MultivariatePolynomial> add_mult_poly(const UnivariatePolynomial &a,
                                                 const UnivariatePolynomial &b)
 {
     unsigned int v1;
@@ -1088,13 +1088,13 @@ RCP<const MultivariatePolynomial> add_mult_poly(const UnivariatePolynomial &a,
     return MultivariatePolynomial::from_dict(s, std::move(dict));
 }
 
-RCP<const MultivariatePolynomial> sub_mult_poly(const UnivariatePolynomial &a,
+RCP< MultivariatePolynomial> sub_mult_poly(const UnivariatePolynomial &a,
                                                 const UnivariatePolynomial &b)
 {
     return add_mult_poly(a, *neg_uni_poly(b));
 }
 
-RCP<const MultivariatePolynomial> mul_mult_poly(const UnivariatePolynomial &a,
+RCP< MultivariatePolynomial> mul_mult_poly(const UnivariatePolynomial &a,
                                                 const UnivariatePolynomial &b)
 {
     unsigned int v1;
@@ -1136,5 +1136,89 @@ RCP<const MultivariatePolynomial> mul_mult_poly(const UnivariatePolynomial &a,
     }
     return MultivariatePolynomial::from_dict(s, std::move(dict));
 }
+
+//New
+void add_eq_mult_poly(MultivariatePolynomial &a, const MultivariatePolynomial &b)
+{
+    if( set_eq<set_sym>(a.vars_, b.vars_))
+    {    
+        vec_uint v1;
+        vec_uint v2;
+        set_sym s;
+        umap_vec_expr dict;
+        umap_sym_int degs;
+        unsigned int size = reconcile(v1, v2, s, a.vars_, b.vars_);
+        for (auto bucket : a.dict_) {
+            dict.insert(std::pair<vec_int, Expression>(
+                translate(bucket.first, v1, size), bucket.second));
+        }
+        for (auto bucket : b.dict_) {
+            auto target = dict.find(translate(bucket.first, v2, size));
+            if (target != dict.end()) {
+                target->second += bucket.second;
+            } else {
+                dict.insert(std::pair<vec_int, Expression>(
+                    translate(bucket.first, v2, size), bucket.second));
+            }
+        }
+        setEqual(a, *MultivariatePolynomial::from_dict(s, std::move(dict)));
+    }
+    else //If sets are equal
+    {
+        vec_uint v1;
+        vec_uint v2;
+        set_sym s;
+        umap_sym_int degs;
+        unsigned int size = reconcile(v1, v2, s, a.vars_, b.vars_);
+        for (auto bucket : b.dict_) {
+            auto target = a.dict_.find(translate(bucket.first, v2, size));
+            if (target != a.dict_.end()) {
+                target->second += bucket.second;
+            } else {
+                a.dict_.insert(std::pair<vec_int, Expression>(
+                    translate(bucket.first, v2, size), bucket.second));
+            }
+        }
+        setEqual(a, *MultivariatePolynomial::from_dict(s, std::move(a.dict_)));
+    }
+}
+
+
+void sub_eq_mult_poly(MultivariatePolynomial &a, const MultivariatePolynomial &b)
+{
+    add_eq_mult_poly(a, *neg_mult_poly(b));
+}
+
+/*RCP<const MultivariatePolynomial> mul_eq_mult_poly(MultivariatePolynomial &a,
+                                                const MultivariatePolynomial &b)
+{
+    vec_uint v1;
+    vec_uint v2;
+    set_sym s;
+    umap_vec_expr dict;
+    unsigned int size = reconcile(v1, v2, s, a.vars_, b.vars_);
+    for (auto a_bucket : a.dict_) {
+        for (auto b_bucket : b.dict_) {
+            vec_int target = int_vec_translate_and_add(
+                a_bucket.first, b_bucket.first, v1, v2, size);
+            if (dict.find(target) == dict.end()) {
+                dict.insert(std::pair<vec_int, Expression>(
+                    target, a_bucket.second * b_bucket.second));
+            } else {
+                dict.find(target)->second += a_bucket.second * b_bucket.second;
+            }
+        }
+    }
+    return MultivariatePolynomial::from_dict(s, std::move(dict));
+}*/
+
+    
+void setEqual(MultivariatePolynomial &a, MultivariatePolynomial &b)
+{
+    a.vars_ = std::move(b.vars_);
+    a.dict_ = std::move(b.dict_);
+    a.degrees_ = std::move(b.degrees_);
+}
+
 
 } // SymEngine

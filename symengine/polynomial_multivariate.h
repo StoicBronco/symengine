@@ -154,7 +154,7 @@ public:
                            umap_vec_expr &dict);
     // creates a MultivariatePolynomial in cannonical form based on dictionary
     // d.
-    static RCP<const MultivariatePolynomial> from_dict(const set_sym &s,
+    static RCP<MultivariatePolynomial> from_dict(const set_sym &s,
                                                        umap_vec_expr &&d);
     vec_basic get_args() const;
     bool is_canonical(const set_sym &vars, const umap_sym_int &degrees,
@@ -166,39 +166,44 @@ public:
     eval(std::map<RCP<const Symbol>, Expression, RCPSymbolCompare> &vals) const;
 };
 
-RCP<const MultivariatePolynomial>
+RCP< MultivariatePolynomial>
 add_mult_poly(const MultivariatePolynomial &a, const MultivariatePolynomial &b);
-RCP<const MultivariatePolynomial>
+RCP< MultivariatePolynomial>
 neg_mult_poly(const MultivariatePolynomial &a);
-RCP<const MultivariatePolynomial>
+RCP< MultivariatePolynomial>
 sub_mult_poly(const MultivariatePolynomial &a, const MultivariatePolynomial &b);
-RCP<const MultivariatePolynomial>
+RCP< MultivariatePolynomial>
 mul_mult_poly(const MultivariatePolynomial &a, const MultivariatePolynomial &b);
 
-RCP<const MultivariatePolynomial> add_mult_poly(const MultivariatePolynomial &a,
+RCP< MultivariatePolynomial> add_mult_poly(const MultivariatePolynomial &a,
                                                 const UnivariatePolynomial &b);
-RCP<const MultivariatePolynomial>
+RCP< MultivariatePolynomial>
 add_mult_poly(const UnivariatePolynomial &a, const MultivariatePolynomial &b);
-RCP<const MultivariatePolynomial> sub_mult_poly(const MultivariatePolynomial &a,
+RCP< MultivariatePolynomial> sub_mult_poly(const MultivariatePolynomial &a,
                                                 const UnivariatePolynomial &b);
-RCP<const MultivariatePolynomial>
+RCP< MultivariatePolynomial>
 sub_mult_poly(const UnivariatePolynomial &a, const MultivariatePolynomial &b);
-RCP<const MultivariatePolynomial> mul_mult_poly(const MultivariatePolynomial &a,
+RCP< MultivariatePolynomial> mul_mult_poly(const MultivariatePolynomial &a,
                                                 const UnivariatePolynomial &b);
-RCP<const MultivariatePolynomial>
+RCP< MultivariatePolynomial>
 mul_mult_poly(const UnivariatePolynomial &a, const MultivariatePolynomial &b);
 
-RCP<const MultivariatePolynomial> add_mult_poly(const UnivariatePolynomial &a,
+RCP< MultivariatePolynomial> add_mult_poly(const UnivariatePolynomial &a,
                                                 const UnivariatePolynomial &b);
-RCP<const MultivariatePolynomial> sub_mult_poly(const UnivariatePolynomial &a,
+RCP< MultivariatePolynomial> sub_mult_poly(const UnivariatePolynomial &a,
                                                 const UnivariatePolynomial &b);
-RCP<const MultivariatePolynomial> mul_mult_poly(const UnivariatePolynomial &a,
+RCP< MultivariatePolynomial> mul_mult_poly(const UnivariatePolynomial &a,
                                                 const UnivariatePolynomial &b);
+
+void add_eq_mult_poly(MultivariatePolynomial &a, const MultivariatePolynomial &b);
+void sub_eq_mult_poly(MultivariatePolynomial &a, const MultivariatePolynomial &b);
+// void mul_eq_mult_poly(MultivariatePolynomial &a, const MultivariatePolynomial &b);
+void setEqual(MultivariatePolynomial &a, MultivariatePolynomial &b);
 
 class MultivariateExprPolynomial
 {
 private:
-    RCP<const MultivariatePolynomial> poly_;
+    RCP<MultivariatePolynomial> poly_;
 
 public:
     MultivariateExprPolynomial()
@@ -212,7 +217,7 @@ public:
         SYMENGINE_NOEXCEPT : poly_(std::move(other.poly_))
     {
     }
-    MultivariateExprPolynomial(RCP<const MultivariatePolynomial> p)
+    MultivariateExprPolynomial(RCP< MultivariatePolynomial> p)
         : poly_(std::move(p))
     {
     }
@@ -262,7 +267,7 @@ public:
     MultivariateExprPolynomial &
     operator+=(const MultivariateExprPolynomial &other)
     {
-        poly_ = add_mult_poly(*poly_, *other.poly_);
+        add_eq_mult_poly(*poly_, *other.poly_);
         return *this;
     }
 
@@ -276,14 +281,14 @@ public:
     MultivariateExprPolynomial operator-() const
     {
         MultivariateExprPolynomial retval(*this);
-        neg_mult_poly(*(retval.poly_.ptr()));
+        retval.poly_ = neg_mult_poly(*retval.poly_);
         return retval;
     }
 
     MultivariateExprPolynomial &
     operator-=(const MultivariateExprPolynomial &other)
     {
-        poly_ = sub_mult_poly(*poly_, *other.poly_);
+        sub_eq_mult_poly(*poly_, *other.poly_);
         return *this;
     }
 
